@@ -54,6 +54,7 @@ $scriptRoot = $PSScriptRoot
 if (-not $scriptRoot) { $scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Definition }
 
 $sourceScript = Join-Path $scriptRoot "scripts\copilot-notify.ps1"
+$sourceWav = Join-Path $scriptRoot "scripts\copilot-notify.wav"
 
 if (-not (Test-Path $sourceScript)) {
     Write-Error "Source notification script not found: $sourceScript"
@@ -107,9 +108,13 @@ $markerEnd
         }
     }
 
-    # Copy the notification script
+    # Copy the notification script and audio file
     New-Item -ItemType Directory -Path $targetScriptDir -Force | Out-Null
     Copy-Item -Path $sourceScript -Destination $targetScript -Force
+    if (Test-Path $sourceWav) {
+        $targetWav = Join-Path $targetScriptDir "copilot-notify.wav"
+        Copy-Item -Path $sourceWav -Destination $targetWav -Force
+    }
 
     # Append instruction to copilot-instructions.md (or create it)
     if (Test-Path $targetInstructions) {
@@ -182,6 +187,10 @@ New-Item -ItemType Directory -Path $targetScriptDir -Force | Out-Null
 
 Copy-Item -Path $sourceInstruction -Destination $targetInstruction -Force
 Copy-Item -Path $sourceScript -Destination $targetScript -Force
+if (Test-Path $sourceWav) {
+    $targetWav = Join-Path $targetScriptDir "copilot-notify.wav"
+    Copy-Item -Path $sourceWav -Destination $targetWav -Force
+}
 
 Write-Host ""
 Write-Host "Copilot completion notification installed into repo!" -ForegroundColor Green

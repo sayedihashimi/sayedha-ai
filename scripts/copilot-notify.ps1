@@ -46,14 +46,25 @@ param(
 # --- Play completion melody ---
 if (-not $NoSound) {
     try {
-        # Ascending C-major jingle: C5 → D5 → E5 → G5
-        [System.Console]::Beep(523, 150)   # C5
-        [System.Console]::Beep(587, 150)   # D5
-        [System.Console]::Beep(659, 150)   # E5
-        [System.Console]::Beep(784, 300)   # G5 (held longer for a satisfying finish)
+        # Look for the WAV file next to this script
+        $wavPath = Join-Path (Split-Path -Parent $PSCommandPath) "copilot-notify.wav"
+        if (Test-Path $wavPath) {
+            # Play the WAV file using .NET SoundPlayer (rich Dm-style jingle)
+            Add-Type -AssemblyName System.IO -ErrorAction SilentlyContinue
+            $player = New-Object System.Media.SoundPlayer $wavPath
+            $player.PlaySync()
+            $player.Dispose()
+        }
+        else {
+            # Fallback to system beeps if WAV not found
+            [System.Console]::Beep(523, 150)   # C5
+            [System.Console]::Beep(587, 150)   # D5
+            [System.Console]::Beep(659, 150)   # E5
+            [System.Console]::Beep(784, 300)   # G5
+        }
     }
     catch {
-        Write-Verbose "Could not play beep melody: $_"
+        Write-Verbose "Could not play completion sound: $_"
     }
 }
 
