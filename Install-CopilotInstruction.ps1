@@ -78,8 +78,14 @@ a conversation, or any other interaction — run the following PowerShell script
 very last action before your final message:
 
 ``````
-pwsh -NoProfile -File "`$HOME/.copilot/scripts/copilot-notify.ps1"
+pwsh -NoProfile -File "`$HOME/.copilot/scripts/copilot-notify.ps1" -Title "<project>" -Message "<summary>"
 ``````
+
+Replace the placeholders:
+- ``<project>``: The name of the current repository or project folder (e.g. "sayedha-ai").
+- ``<summary>``: A brief 1-line summary (under 80 chars) of what you just completed
+  (e.g. "Refactored auth module", "Answered question about strawberry",
+  "Fixed 3 test failures"). Keep it concise and human-readable.
 
 **Rules:**
 - Run this on EVERY response, not just code tasks. This includes answering questions,
