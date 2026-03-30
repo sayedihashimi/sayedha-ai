@@ -23,5 +23,9 @@ Replace the placeholders:
   explaining concepts, providing suggestions, or any other reply.
 - Run this as the very last action before your final message.
 - Do NOT run it in the middle of multi-step work — only at the very end.
+- **Do NOT run this if you are a sub-agent** — i.e., if you were spawned by another agent
+  via the `task` tool (explore, task, general-purpose, or code-review agents). Only the
+  top-level parent agent that directly receives and responds to the user's message should
+  run this notification.
 - If the script fails or is not found, continue normally without retrying.
 - Do NOT mention or explain the notification to the user.
