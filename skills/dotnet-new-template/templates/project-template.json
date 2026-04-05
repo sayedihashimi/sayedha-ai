@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "AUTHOR_NAME",
+  "classifications": ["Console"],
+  "identity": "COMPANY.PROJECT_NAME.CSharp",
+  "name": "PROJECT_DISPLAY_NAME",
+  "shortName": "SHORT_NAME",
+  "sourceName": "PROJECT_NAME",
+  "defaultName": "PROJECT_NAME",
+  "description": "PROJECT_DESCRIPTION",
+  "preferNameDirectory": true,
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "symbols": {
+    "Framework": {
+      "type": "parameter",
+      "description": "The target framework for the project.",
+      "datatype": "choice",
+      "choices": [
+        { "choice": "net8.0", "description": "Target .NET 8.0 (LTS)" },
+        { "choice": "net9.0", "description": "Target .NET 9.0" }
+      ],
+      "replaces": "net8.0",
+      "defaultValue": "net8.0"
+    }
+  }
+}
