@@ -1,4 +1,24 @@
-# sayedha-ai — Copilot Completion Notification
+# sayedha-ai — Copilot Tools & Skills
+
+This repository contains reusable GitHub Copilot customizations: **custom instructions** and **agent skills**.
+
+## Skills
+
+### [dotnet-new-template](skills/dotnet-new-template/SKILL.md)
+
+A Copilot agent skill for creating .NET project, item, and solution templates. Guides you through creating `template.json`, `ide.host.json`, configuring parameters/symbols, and packaging templates as NuGet packages. Auto-detects existing .NET projects and offers to convert them into reusable templates.
+
+**Features:**
+- Create project, item, and solution templates for `dotnet new` and Visual Studio
+- Auto-detect existing .NET projects in the working directory
+- Generate `template.json` with proper symbols, parameters, and conditional content
+- Generate `ide.host.json` for Visual Studio integration
+- Validate templates with the included PowerShell linting script
+- NuGet packaging guidance for template distribution
+
+---
+
+## Copilot Completion Notification
 
 Reusable [GitHub Copilot custom instruction](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-custom-instructions) that plays a **sound** and shows a **Windows notification** when Copilot finishes a task.
 
@@ -110,12 +130,19 @@ The Copilot CLI reads instructions from these locations (all are supported):
 ```
 sayedha-ai/
 ├── README.md
+├── skills/
+│   └── dotnet-new-template/               # .NET template authoring skill
+│       ├── SKILL.md                       # Skill entry point
+│       ├── reference/                     # Detailed reference docs
+│       ├── examples/                      # Golden input/output examples
+│       ├── templates/                     # Starter JSON templates
+│       └── scripts/                       # Validation script
 ├── instructions/
-│   └── notify-on-completion.instructions.md   # Copilot instruction (per-repo source)
+│   └── notify-on-completion.instructions.md
 ├── scripts/
-│   └── copilot-notify.ps1                     # Notification script (source)
-├── Install-CopilotInstruction.ps1             # Install (global or per-repo)
-├── Uninstall-CopilotInstruction.ps1           # Uninstall
+│   └── copilot-notify.ps1
+├── Install-CopilotInstruction.ps1
+├── Uninstall-CopilotInstruction.ps1
 └── LICENSE
 ```
 

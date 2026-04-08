@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "AUTHOR_NAME",
+  "classifications": ["Solution"],
+  "identity": "COMPANY.SOLUTION_NAME.CSharp",
+  "name": "SOLUTION_DISPLAY_NAME",
+  "shortName": "SHORT_NAME",
+  "sourceName": "SOLUTION_NAME",
+  "defaultName": "SOLUTION_NAME",
+  "description": "SOLUTION_DESCRIPTION",
+  "preferNameDirectory": true,
+  "tags": {
+    "language": "C#",
+    "type": "solution",
+    "editorTreatAs": "solution"
+  },
+  "guids": [
+    "11111111-1111-1111-1111-111111111111"
+  ],
+  "primaryOutputs": [
+    { "path": "src/PROJECT_NAME/PROJECT_NAME.csproj" }
+  ],
+  "symbols": {
+    "Framework": {
+      "type": "parameter",
+      "description": "The target framework for the projects.",
+      "datatype": "choice",
+      "choices": [
+        { "choice": "net8.0", "description": "Target .NET 8.0 (LTS)" },
+        { "choice": "net9.0", "description": "Target .NET 9.0" }
+      ],
+      "replaces": "net8.0",
+      "defaultValue": "net8.0"
+    }
+  },
+  "postActions": [
+    {
+      "description": "Restore NuGet packages.",
+      "manualInstructions": [{ "text": "Run 'dotnet restore'" }],
+      "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
+      "continueOnError": true
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "AUTHOR_NAME",
+  "classifications": ["Common", "Code"],
+  "identity": "COMPANY.ITEM_NAME.CSharp",
+  "name": "ITEM_DISPLAY_NAME",
+  "shortName": "SHORT_NAME",
+  "description": "ITEM_DESCRIPTION",
+  "tags": {
+    "language": "C#",
+    "type": "item"
+  },
+  "symbols": {
+    "ClassName": {
+      "type": "parameter",
+      "datatype": "text",
+      "description": "The name of the generated class.",
+      "replaces": "CLASS_NAME",
+      "fileRename": "CLASS_NAME",
+      "defaultValue": "CLASS_NAME"
+    }
+  }
+}
