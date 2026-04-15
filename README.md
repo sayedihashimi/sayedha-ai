@@ -4,7 +4,7 @@ This repository contains reusable GitHub Copilot customizations: **custom instru
 
 ## Skills
 
-### [dotnet-new-template](skills/dotnet-new-template/SKILL.md)
+### [dotnet-new-template](.agents/skills/dotnet-new-template/SKILL.md)
 
 A Copilot agent skill for creating .NET project, item, and solution templates. Guides you through creating `template.json`, `ide.host.json`, configuring parameters/symbols, and packaging templates as NuGet packages. Auto-detects existing .NET projects and offers to convert them into reusable templates.
 
@@ -130,13 +130,14 @@ The Copilot CLI reads instructions from these locations (all are supported):
 ```
 sayedha-ai/
 ├── README.md
-├── skills/
-│   └── dotnet-new-template/               # .NET template authoring skill
-│       ├── SKILL.md                       # Skill entry point
-│       ├── reference/                     # Detailed reference docs
-│       ├── examples/                      # Golden input/output examples
-│       ├── templates/                     # Starter JSON templates
-│       └── scripts/                       # Validation script
+├── .agents/
+│   └── skills/
+│       └── dotnet-new-template/           # .NET template authoring skill
+│           ├── SKILL.md                   # Skill entry point
+│           ├── reference/                 # Detailed reference docs
+│           ├── examples/                  # Golden input/output examples
+│           ├── templates/                 # Starter JSON templates
+│           └── scripts/                   # Validation script
 ├── instructions/
 │   └── notify-on-completion.instructions.md
 ├── scripts/
