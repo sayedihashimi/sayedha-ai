@@ -16,6 +16,16 @@ A Copilot agent skill for creating .NET project, item, and solution templates. G
 - Validate templates with the included PowerShell linting script
 - NuGet packaging guidance for template distribution
 
+### [dotnet-watch](.agents/skills/dotnet-watch/SKILL.md)
+
+A Copilot agent skill for running .NET applications with `dotnet watch --non-interactive` instead of `dotnet run`. Avoids file-lock issues and enables automatic hot-reload when source files change, so the app stays running across code edits without manual restarts.
+
+**Features:**
+- Use `dotnet watch --non-interactive` for all .NET runnable project types
+- Monitor console output for hot-reload success, build errors, and rude edits
+- Automatic app restart on rude edits (no manual intervention)
+- Guidance for editing code while the app is running
+
 ---
 
 ## Copilot Completion Notification
@@ -132,12 +142,16 @@ sayedha-ai/
 ├── README.md
 ├── .agents/
 │   └── skills/
-│       └── dotnet-new-template/           # .NET template authoring skill
+│       ├── dotnet-new-template/           # .NET template authoring skill
+│       │   ├── SKILL.md                   # Skill entry point
+│       │   ├── reference/                 # Detailed reference docs
+│       │   ├── examples/                  # Golden input/output examples
+│       │   ├── templates/                 # Starter JSON templates
+│       │   └── scripts/                   # Validation script
+│       └── dotnet-watch/                  # .NET app runner with hot-reload
 │           ├── SKILL.md                   # Skill entry point
-│           ├── reference/                 # Detailed reference docs
-│           ├── examples/                  # Golden input/output examples
-│           ├── templates/                 # Starter JSON templates
-│           └── scripts/                   # Validation script
+│           ├── reference/                 # Console output patterns
+│           └── examples/                  # Workflow examples
 ├── instructions/
 │   └── notify-on-completion.instructions.md
 ├── scripts/
