@@ -1,6 +1,6 @@
 # `dotnet watch` Console Output Patterns
 
-This reference documents the key console output messages from `dotnet watch --non-interactive` that Copilot should monitor when running .NET applications.
+This reference documents the key console output messages from `dotnet watch --non-interactive` to monitor when running .NET applications.
 
 ---
 

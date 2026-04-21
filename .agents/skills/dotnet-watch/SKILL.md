@@ -7,7 +7,7 @@ description: "Runs .NET apps with dotnet watch --non-interactive instead of dotn
 
 ## Core Purpose
 
-Guide Copilot to use `dotnet watch --non-interactive` instead of `dotnet run` when running .NET applications. This avoids file-lock issues and enables automatic hot-reload when source files change, so the app stays running across code edits without manual restarts.
+Use `dotnet watch --non-interactive` instead of `dotnet run` when running .NET applications. This avoids file-lock issues and enables automatic hot-reload when source files change, so the app stays running across code edits without manual restarts.
 
 ---
 
@@ -74,14 +74,14 @@ Use this workflow whenever you need to **run a .NET application** — any projec
 ## Important Behavior Notes
 
 - **Rude edits** are changes that cannot be applied via hot-reload (e.g., changing method signatures, adding new classes, modifying startup code). With `--non-interactive`, `dotnet watch` automatically restarts the app when a rude edit is detected — no manual intervention needed. Wait for the restart to complete before continuing.
-- **File locks:** Unlike `dotnet run`, `dotnet watch` does not hold long-lived file locks on source files, making it safe for Copilot to edit files while the app runs.
+- **File locks:** Unlike `dotnet run`, `dotnet watch` does not hold long-lived file locks on source files, making it safe to edit files while the app runs.
 - **Multiple projects:** If the solution has multiple runnable projects, launch each in a separate async session.
 
 ---
 
 ## Inline Example
 
-**Scenario:** User asks Copilot to run a web API and then add a new endpoint.
+**Scenario:** Run a web API and then add a new endpoint.
 
 **Step 1 — Launch:**
 ```

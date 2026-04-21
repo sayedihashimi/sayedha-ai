@@ -1,12 +1,12 @@
 # Example: Full `dotnet watch` Workflow
 
-This example demonstrates a complete workflow where Copilot starts a .NET web API with `dotnet watch`, makes code changes, and handles both successful hot-reload and a rude edit.
+This example demonstrates a complete workflow: start a .NET web API with `dotnet watch`, make code changes, and handle both successful hot-reload and a rude edit.
 
 ---
 
 ## Scenario
 
-The user has an ASP.NET Core Web API project at `src/WeatherApi/WeatherApi.csproj`. They ask Copilot to run the app and add a new endpoint.
+The user has an ASP.NET Core Web API project at `src/WeatherApi/WeatherApi.csproj` and wants to run the app and add a new endpoint.
 
 ---
 
