@@ -9,8 +9,9 @@ This repository contains reusable GitHub Copilot customizations: **agent skills*
 | Directory | Contents |
 |-----------|----------|
 | `.agents/skills/<name>/` | Agent skills (each skill is a folder with a `SKILL.md` entry point) |
-| `instructions/` | Reusable custom instruction files (`.instructions.md`) |
-| `scripts/` | PowerShell helper scripts |
+| `plugins/<name>/` | Distributable plugins (each plugin has a `plugin.json` manifest, hooks, scripts, etc.) |
+| `instructions/` | Reusable custom instruction files (`.instructions.md`) — legacy, prefer plugins |
+| `scripts/` | PowerShell helper scripts — legacy, prefer plugin-bundled scripts |
 | `research/` | Background research and best-practices documentation |
 | `.github/prompts/` | Prompt files for one-off or planning tasks |
 

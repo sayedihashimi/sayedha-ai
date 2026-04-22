@@ -1,0 +1,11 @@
+{
+  "name": "copilot-notify",
+  "description": "Plays a completion sound and shows a Windows notification when a Copilot/Claude session ends.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Sayed Hashimi",
+    "url": "https://github.com/sayedihashimi"
+  },
+  "license": "MIT",
+  "keywords": ["notification", "sound", "windows", "session-end", "completion"]
+}

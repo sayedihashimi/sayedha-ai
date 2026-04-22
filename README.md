@@ -28,112 +28,33 @@ A Copilot agent skill for running .NET applications with `dotnet watch --non-int
 
 ---
 
-## Copilot Completion Notification
+## Plugins
 
-Reusable [GitHub Copilot custom instruction](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-custom-instructions) that plays a **sound** and shows a **Windows notification** when Copilot finishes a task.
+### [copilot-notify](plugins/copilot-notify/)
 
-## What It Does
+A Copilot CLI / Claude Code **plugin** that plays a completion sound and shows a Windows notification when a session ends or a task completes. Uses **hooks** (`Stop` and `SessionEnd` events) instead of custom instructions — more reliable because hooks are enforced by the runtime, not by LLM instruction-following.
 
-When installed, Copilot will automatically — at the very end of every task:
-
-1. 🎵 **Play a completion melody** — a short ascending C-major jingle (C5→D5→E5→G5)
-2. 🔔 **Show a Windows balloon notification** — "GitHub Copilot — Task completed!"
-
-This helps you notice when Copilot is done, especially during long-running agent tasks where you've switched to another window.
-
-## Quick Start
-
-### Global Install (Recommended — applies to all repos)
+**Install:**
 
 ```powershell
-# Clone this repo (one-time)
-git clone https://github.com/sayedihashimi/sayedha-ai.git
+# Copilot CLI
+copilot plugin install sayedihashimi/sayedha-ai:plugins/copilot-notify
 
-# Install globally
-.\sayedha-ai\Install-CopilotInstruction.ps1
+# Claude Code
+claude --plugin-dir ./plugins/copilot-notify
 ```
 
-This installs to `~/.copilot/`, which the Copilot CLI reads on **every session across all repos**:
+See the [plugin README](plugins/copilot-notify/README.md) for full details.
 
-| File | Purpose |
-|------|---------|
-| `~/.copilot/copilot-instructions.md` | Appends the notification instruction |
-| `~/.copilot/scripts/copilot-notify.ps1` | Notification script (sound + popup) |
+---
 
-No per-repo setup needed. No files to commit.
+## Custom Instructions (Legacy)
 
-### Per-Repo Install (alternative)
+### Copilot Completion Notification (deprecated)
 
-```powershell
-.\sayedha-ai\Install-CopilotInstruction.ps1 -TargetRepo C:\path\to\your\project
-```
+> **Note:** The custom instruction approach (`instructions/notify-on-completion.instructions.md`) is deprecated in favor of the [copilot-notify plugin](plugins/copilot-notify/) above. The plugin uses lifecycle hooks which are more reliable than relying on the LLM to run a script after every response.
 
-This copies files into the repo's `.github/` directory. Commit them to share with collaborators.
-
-### Uninstall
-
-```powershell
-# Remove global install
-.\sayedha-ai\Uninstall-CopilotInstruction.ps1
-
-# Remove from a specific repo
-.\sayedha-ai\Uninstall-CopilotInstruction.ps1 -TargetRepo C:\path\to\your\project
-```
-
-### Test the notification manually
-
-```powershell
-pwsh -NoProfile -File ~/.copilot/scripts/copilot-notify.ps1
-```
-
-## Requirements
-
-- **Windows** (uses `System.Console.Beep` and `System.Windows.Forms.NotifyIcon`)
-- **PowerShell 7+** (PowerShell Core)
-- **GitHub Copilot CLI** or **VS Code Copilot** in agent mode
-
-## How It Works
-
-### Copilot CLI (primary)
-
-The Copilot CLI reads `$HOME/.copilot/copilot-instructions.md` on every session. The install script appends a notification instruction block (wrapped in marker comments for clean install/uninstall). It also reads `.github/instructions/*.instructions.md` from the current repo.
-
-### VS Code Copilot
-
-The per-repo install uses `.github/instructions/notify-on-completion.instructions.md` with `applyTo: "**"` frontmatter, which VS Code Copilot picks up automatically.
-
-### Customization
-
-The notification script accepts parameters:
-
-```powershell
-# Custom message and title
-.\copilot-notify.ps1 -Message "Build succeeded!" -Title "My Project"
-
-# Sound only (no popup)
-.\copilot-notify.ps1 -NoNotification
-
-# Notification only (no sound)
-.\copilot-notify.ps1 -NoSound
-```
-
-## Instruction Locations (Copilot CLI)
-
-The Copilot CLI reads instructions from these locations (all are supported):
-
-| Location | Scope |
-|----------|-------|
-| `$HOME/.copilot/copilot-instructions.md` | **User-global** (all repos) |
-| `.github/copilot-instructions.md` | Per-repo |
-| `.github/instructions/**/*.instructions.md` | Per-repo (path-specific) |
-| `AGENTS.md` | Per-repo |
-| `COPILOT_CUSTOM_INSTRUCTIONS_DIRS` env var | Custom directories |
-
-## Limitations
-
-- **Agent mode only** — The notification only works when Copilot is in agent mode (where it can execute terminal commands). In regular chat, Copilot generates text but doesn't run commands.
-- **Windows only** — The notification APIs are Windows-specific. macOS/Linux support could be added in the future.
-- **Best-effort** — Copilot follows instructions on a best-effort basis. It will usually run the notification, but it's not guaranteed on every single interaction.
+The legacy install/uninstall scripts (`Install-CopilotInstruction.ps1`, `Uninstall-CopilotInstruction.ps1`) still work for the custom instruction approach if needed.
 
 ## File Structure
 
@@ -143,21 +64,31 @@ sayedha-ai/
 ├── .agents/
 │   └── skills/
 │       ├── dotnet-new-template/           # .NET template authoring skill
-│       │   ├── SKILL.md                   # Skill entry point
-│       │   ├── reference/                 # Detailed reference docs
-│       │   ├── examples/                  # Golden input/output examples
-│       │   ├── templates/                 # Starter JSON templates
-│       │   └── scripts/                   # Validation script
+│       │   ├── SKILL.md
+│       │   ├── reference/
+│       │   ├── examples/
+│       │   ├── templates/
+│       │   └── scripts/
 │       └── dotnet-watch/                  # .NET app runner with hot-reload
-│           ├── SKILL.md                   # Skill entry point
-│           ├── reference/                 # Console output patterns
-│           └── examples/                  # Workflow examples
-├── instructions/
+│           ├── SKILL.md
+│           ├── reference/
+│           └── examples/
+├── plugins/
+│   └── copilot-notify/                   # Session notification plugin
+│       ├── .claude-plugin/plugin.json
+│       ├── .github/plugin/plugin.json
+│       ├── hooks/hooks.json
+│       ├── scripts/
+│       │   ├── copilot-notify.ps1
+│       │   └── copilot-notify.wav
+│       ├── README.md
+│       └── LICENSE
+├── instructions/                          # Legacy custom instructions
 │   └── notify-on-completion.instructions.md
-├── scripts/
+├── scripts/                               # Legacy scripts
 │   └── copilot-notify.ps1
-├── Install-CopilotInstruction.ps1
-├── Uninstall-CopilotInstruction.ps1
+├── Install-CopilotInstruction.ps1         # Legacy install script
+├── Uninstall-CopilotInstruction.ps1       # Legacy uninstall script
 └── LICENSE
 ```
 

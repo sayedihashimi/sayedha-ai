@@ -1,0 +1,24 @@
+{
+  "hooks": {
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "pwsh -NoProfile -File \"${CLAUDE_PLUGIN_ROOT}/scripts/copilot-notify.ps1\" -Title \"Copilot\" -Message \"Session ended\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "pwsh -NoProfile -File \"${CLAUDE_PLUGIN_ROOT}/scripts/copilot-notify.ps1\" -Title \"Copilot\" -Message \"Task completed\""
+          }
+        ]
+      }
+    ]
+  }
+}
