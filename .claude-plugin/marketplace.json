@@ -1,0 +1,19 @@
+{
+  "name": "sayedha-ai",
+  "owner": {
+    "name": "Sayed Hashimi",
+    "email": "sayed.hashimi@gmail.com"
+  },
+  "metadata": {
+    "description": "Copilot plugins, skills, and customizations by Sayed Hashimi",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "copilot-notify",
+      "description": "Plays a completion sound and shows a Windows notification when a Copilot/Claude session ends.",
+      "version": "1.0.0",
+      "source": "./plugins/copilot-notify"
+    }
+  ]
+}
