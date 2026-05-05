@@ -18,12 +18,12 @@ var detector = new TargetDetector(repoRoot);
 var installer = new SkillInstaller(fetcher);
 var tracker = new InstalledSkillTracker(detector);
 
-var rootCommand = new RootCommand("Browse, install, and manage Copilot/Claude skills for .NET projects");
+var rootCommand = new RootCommand("Browse, install, and manage skills and plugins for .NET projects");
 
 // No subcommand → launch TUI
 rootCommand.SetAction(async (ctx, ct) =>
 {
-    var menu = new MainMenu(cache, tracker, installer, detector);
+    var menu = new MainMenu(cache, tracker, installer, detector, repoRoot);
     await menu.RunAsync(ct);
 });
 

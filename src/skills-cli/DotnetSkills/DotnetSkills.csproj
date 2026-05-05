@@ -9,7 +9,7 @@
     <ToolCommandName>dotnet-skills</ToolCommandName>
     <PackageId>dotnet-skills</PackageId>
     <Version>0.1.0</Version>
-    <Description>Browse, install, and manage Copilot and Claude skills/plugins for .NET projects</Description>
+    <Description>Browse, install, and manage skills and plugins for .NET projects</Description>
     <Authors>sayedihashimi</Authors>
   </PropertyGroup>
 

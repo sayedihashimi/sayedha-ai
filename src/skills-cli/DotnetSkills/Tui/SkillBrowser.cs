@@ -11,13 +11,15 @@ public class SkillBrowser
     private readonly InstalledSkillTracker _tracker;
     private readonly SkillInstaller _installer;
     private readonly TargetDetector _detector;
+    private readonly string _repoRoot;
 
-    public SkillBrowser(CatalogCache cache, InstalledSkillTracker tracker, SkillInstaller installer, TargetDetector detector)
+    public SkillBrowser(CatalogCache cache, InstalledSkillTracker tracker, SkillInstaller installer, TargetDetector detector, string repoRoot)
     {
         _cache = cache;
         _tracker = tracker;
         _installer = installer;
         _detector = detector;
+        _repoRoot = repoRoot;
     }
 
     public async Task BrowseAsync(CancellationToken ct = default)
@@ -36,29 +38,46 @@ public class SkillBrowser
         var installed = _tracker.GetInstalledSkills();
         var installedNames = installed.Select(i => i.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-        var selected = AnsiConsole.Prompt(
-            new SelectionPrompt<SkillInfo>()
-                .Title("[bold]Browse skills[/] [dim](use arrow keys, enter to view details)[/]")
-                .PageSize(15)
-                .HighlightStyle(new Style(Color.Cyan1))
-                .AddChoices(skills)
-                .UseConverter(s =>
-                {
-                    var status = installedNames.Contains(s.Name) ? " [green]✓[/]" : "";
-                    var plugin = s.PluginName != null ? $" [dim]({s.PluginName})[/]" : "";
-                    return $"[cyan]{s.Name.EscapeMarkup()}[/]{status}{plugin} - {TruncateDescription(s.Description, 60).EscapeMarkup()}";
-                }));
+        // Detect project profile and show recommended skills first
+        var projectDetector = new ProjectDetector(_repoRoot);
+        var profile = projectDetector.DetectProfile();
 
-        // Show detail and offer install
-        ShowSkillDetail(selected, installedNames.Contains(selected.Name));
-
-        if (!installedNames.Contains(selected.Name))
+        if (profile.HasAnyDetection)
         {
-            var install = AnsiConsole.Confirm("Install this skill?", defaultValue: false);
-            if (install)
+            var recommended = projectDetector.GetRecommendedSkills(skills, profile);
+            if (recommended.Count > 0)
             {
-                await InstallSkillAsync(selected, ct);
+                AnsiConsole.MarkupLine($"[bold]Detected project types:[/] [cyan]{profile.GetSummary()}[/]\n");
+
+                var choice = AnsiConsole.Prompt(
+                    new SelectionPrompt<string>()
+                        .Title($"[bold]⭐ {recommended.Count} recommended skills for your project[/]")
+                        .HighlightStyle(new Style(Color.Cyan1))
+                        .AddChoices(
+                        [
+                            "View recommended skills",
+                            "Browse all skills",
+                        ]));
+
+                if (choice == "View recommended skills")
+                {
+                    var selected = PromptSkillSelection(recommended, installedNames,
+                        "[bold]⭐ Recommended skills[/] [dim](type to filter, enter to view details)[/]");
+                    if (selected != null)
+                    {
+                        await ShowAndOfferInstall(selected, installedNames, ct);
+                    }
+                    return;
+                }
             }
+        }
+
+        // Browse all skills
+        var allSelected = PromptSkillSelection(skills, installedNames,
+            "[bold]Browse skills[/] [dim](type to filter, enter to view details)[/]");
+        if (allSelected != null)
+        {
+            await ShowAndOfferInstall(allSelected, installedNames, ct);
         }
     }
 
@@ -153,6 +172,37 @@ public class SkillBrowser
         }
 
         AnsiConsole.MarkupLine($"\n[green bold]Done![/] Installed {selected.Count} skill(s).");
+    }
+
+    private static SkillInfo? PromptSkillSelection(List<SkillInfo> skills, HashSet<string> installedNames, string title)
+    {
+        return AnsiConsole.Prompt(
+            new SelectionPrompt<SkillInfo>()
+                .Title(title)
+                .PageSize(15)
+                .EnableSearch()
+                .HighlightStyle(new Style(Color.Cyan1))
+                .AddChoices(skills)
+                .UseConverter(s =>
+                {
+                    var status = installedNames.Contains(s.Name) ? " ✓" : "";
+                    var plugin = s.PluginName != null ? $" ({s.PluginName})" : "";
+                    return $"{s.Name}{status}{plugin} - {TruncateDescription(s.Description, 60)}";
+                }));
+    }
+
+    private async Task ShowAndOfferInstall(SkillInfo selected, HashSet<string> installedNames, CancellationToken ct)
+    {
+        ShowSkillDetail(selected, installedNames.Contains(selected.Name));
+
+        if (!installedNames.Contains(selected.Name))
+        {
+            var install = AnsiConsole.Confirm("Install this skill?", defaultValue: true);
+            if (install)
+            {
+                await InstallSkillAsync(selected, ct);
+            }
+        }
     }
 
     private async Task InstallSkillAsync(SkillInfo skill, CancellationToken ct)

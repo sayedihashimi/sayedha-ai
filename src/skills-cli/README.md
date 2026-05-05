@@ -1,6 +1,6 @@
 # dotnet-skills
 
-A .NET 10 global CLI tool for browsing, installing, and managing Copilot/Claude skills and plugins in your .NET projects.
+A .NET 10 global CLI tool for browsing, installing, and managing skills and plugins in your .NET projects.
 
 ## Features
 

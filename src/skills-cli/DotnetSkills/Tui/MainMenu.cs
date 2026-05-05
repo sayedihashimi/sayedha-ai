@@ -11,19 +11,21 @@ public class MainMenu
     private readonly InstalledSkillTracker _tracker;
     private readonly SkillInstaller _installer;
     private readonly TargetDetector _detector;
+    private readonly string _repoRoot;
 
-    public MainMenu(CatalogCache cache, InstalledSkillTracker tracker, SkillInstaller installer, TargetDetector detector)
+    public MainMenu(CatalogCache cache, InstalledSkillTracker tracker, SkillInstaller installer, TargetDetector detector, string repoRoot)
     {
         _cache = cache;
         _tracker = tracker;
         _installer = installer;
         _detector = detector;
+        _repoRoot = repoRoot;
     }
 
     public async Task RunAsync(CancellationToken ct = default)
     {
         AnsiConsole.Write(new FigletText("dotnet skills").Color(Color.Blue));
-        AnsiConsole.MarkupLine("[dim]Browse, install, and manage Copilot/Claude skills for .NET[/]\n");
+        AnsiConsole.MarkupLine("[dim]Browse, install, and manage skills and plugins for .NET[/]\n");
 
         while (!ct.IsCancellationRequested)
         {
@@ -46,7 +48,7 @@ public class MainMenu
             switch (choice)
             {
                 case "🔍 Browse available skills":
-                    await new SkillBrowser(_cache, _tracker, _installer, _detector).BrowseAsync(ct);
+                    await new SkillBrowser(_cache, _tracker, _installer, _detector, _repoRoot).BrowseAsync(ct);
                     break;
 
                 case "🔎 Search skills":
@@ -55,7 +57,7 @@ public class MainMenu
                     break;
 
                 case "📦 Install a skill":
-                    await new SkillBrowser(_cache, _tracker, _installer, _detector).InstallFlowAsync(ct);
+                    await new SkillBrowser(_cache, _tracker, _installer, _detector, _repoRoot).InstallFlowAsync(ct);
                     break;
 
                 case "📋 List installed skills":
