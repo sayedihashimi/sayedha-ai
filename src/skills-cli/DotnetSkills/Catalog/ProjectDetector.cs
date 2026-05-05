@@ -34,16 +34,28 @@ public class ProjectDetector
 
     public List<SkillInfo> GetRecommendedSkills(List<SkillInfo> allSkills, ProjectProfile profile)
     {
-        var matchingKeywords = profile.GetRelevantKeywords();
-        if (matchingKeywords.Count == 0)
+        var rules = profile.GetRecommendationRules();
+        if (rules.Count == 0)
             return [];
 
-        return allSkills
-            .Where(s => matchingKeywords.Any(kw =>
-                s.Name.Contains(kw, StringComparison.OrdinalIgnoreCase) ||
-                s.Description.Contains(kw, StringComparison.OrdinalIgnoreCase) ||
-                (s.PluginName?.Contains(kw, StringComparison.OrdinalIgnoreCase) ?? false)))
-            .OrderBy(s => s.Name, StringComparer.OrdinalIgnoreCase)
+        // Score each skill: how many detected project types it matches
+        var scored = new List<(SkillInfo Skill, int Score)>();
+        foreach (var skill in allSkills)
+        {
+            int score = 0;
+            foreach (var rule in rules)
+            {
+                if (rule.Matches(skill))
+                    score += rule.Weight;
+            }
+            if (score > 0)
+                scored.Add((skill, score));
+        }
+
+        return scored
+            .OrderByDescending(x => x.Score)
+            .ThenBy(x => x.Skill.Name, StringComparer.OrdinalIgnoreCase)
+            .Select(x => x.Skill)
             .ToList();
     }
 
@@ -157,35 +169,92 @@ public class ProjectProfile
         HasAspNet || HasBlazor || HasMaui || HasEfCore || HasAI ||
         HasTests || HasAspire || HasWorkerService || HasDocker || HasNuGetPackaging;
 
-    public List<string> GetRelevantKeywords()
+    public List<RecommendationRule> GetRecommendationRules()
     {
-        var keywords = new List<string>();
-
-        // Always include general .NET keywords
-        keywords.AddRange(["dotnet", "csharp"]);
+        var rules = new List<RecommendationRule>();
 
         if (HasAspNet)
-            keywords.AddRange(["aspnet", "asp.net", "web", "middleware", "endpoint", "minimal-api", "openapi"]);
-        if (HasBlazor)
-            keywords.AddRange(["blazor", "fluentui"]);
-        if (HasMaui)
-            keywords.AddRange(["maui"]);
-        if (HasEfCore)
-            keywords.AddRange(["ef-core", "entity-framework", "data"]);
-        if (HasAI)
-            keywords.AddRange(["ai", "ml", "semantic-kernel", "openai"]);
-        if (HasTests)
-            keywords.AddRange(["test", "mstest", "xunit", "nunit", "tunit"]);
-        if (HasAspire)
-            keywords.AddRange(["aspire"]);
-        if (HasDocker)
-            keywords.AddRange(["containerize", "docker"]);
-        if (HasNuGetPackaging)
-            keywords.AddRange(["nuget", "package"]);
-        if (HasWorkerService)
-            keywords.AddRange(["worker"]);
+        {
+            rules.Add(new RecommendationRule(
+                Weight: 3,
+                PluginNames: ["dotnet-aspnet"],
+                SkillNamePatterns: ["aspnet", "minimal-api", "openapi", "containerize-aspnet"],
+                DescriptionPatterns: []));
+        }
 
-        return keywords;
+        if (HasBlazor)
+        {
+            rules.Add(new RecommendationRule(
+                Weight: 3,
+                PluginNames: [],
+                SkillNamePatterns: ["blazor", "fluentui-blazor"],
+                DescriptionPatterns: []));
+        }
+
+        if (HasMaui)
+        {
+            rules.Add(new RecommendationRule(
+                Weight: 3,
+                PluginNames: ["dotnet-maui"],
+                SkillNamePatterns: ["maui"],
+                DescriptionPatterns: []));
+        }
+
+        if (HasEfCore)
+        {
+            rules.Add(new RecommendationRule(
+                Weight: 3,
+                PluginNames: ["dotnet-data"],
+                SkillNamePatterns: ["ef-core", "entity-framework", "cosmosdb"],
+                DescriptionPatterns: []));
+        }
+
+        if (HasAI)
+        {
+            rules.Add(new RecommendationRule(
+                Weight: 3,
+                PluginNames: ["dotnet-ai"],
+                SkillNamePatterns: ["semantic-kernel", "openai"],
+                DescriptionPatterns: []));
+        }
+
+        if (HasTests)
+        {
+            rules.Add(new RecommendationRule(
+                Weight: 2,
+                PluginNames: ["dotnet-test"],
+                SkillNamePatterns: ["mstest", "xunit", "nunit", "tunit"],
+                DescriptionPatterns: []));
+        }
+
+        if (HasAspire)
+        {
+            rules.Add(new RecommendationRule(
+                Weight: 3,
+                PluginNames: [],
+                SkillNamePatterns: ["aspire"],
+                DescriptionPatterns: []));
+        }
+
+        if (HasDocker)
+        {
+            rules.Add(new RecommendationRule(
+                Weight: 2,
+                PluginNames: [],
+                SkillNamePatterns: ["containerize-aspnet", "containerize-aspnetcore"],
+                DescriptionPatterns: []));
+        }
+
+        if (HasNuGetPackaging)
+        {
+            rules.Add(new RecommendationRule(
+                Weight: 2,
+                PluginNames: ["dotnet-nuget"],
+                SkillNamePatterns: ["nuget"],
+                DescriptionPatterns: []));
+        }
+
+        return rules;
     }
 
     public string GetSummary()
@@ -202,5 +271,31 @@ public class ProjectProfile
         if (HasNuGetPackaging) parts.Add("NuGet packaging");
         if (HasWorkerService) parts.Add("Worker Service");
         return parts.Count > 0 ? string.Join(", ", parts) : "General .NET";
+    }
+}
+
+public record RecommendationRule(
+    int Weight,
+    string[] PluginNames,
+    string[] SkillNamePatterns,
+    string[] DescriptionPatterns)
+{
+    public bool Matches(SkillInfo skill)
+    {
+        // Match by plugin name (exact, case-insensitive)
+        if (skill.PluginName != null &&
+            PluginNames.Any(p => skill.PluginName.Equals(p, StringComparison.OrdinalIgnoreCase)))
+            return true;
+
+        // Match by skill name patterns (substring)
+        if (SkillNamePatterns.Any(p => skill.Name.Contains(p, StringComparison.OrdinalIgnoreCase)))
+            return true;
+
+        // Match by description patterns (substring) — only if explicitly provided
+        if (DescriptionPatterns.Length > 0 &&
+            DescriptionPatterns.Any(p => skill.Description.Contains(p, StringComparison.OrdinalIgnoreCase)))
+            return true;
+
+        return false;
     }
 }
