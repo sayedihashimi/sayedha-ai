@@ -129,11 +129,18 @@ public class ProjectDetector
     {
         try
         {
-            if (Directory.GetFiles(_repoRoot, "*.razor", SearchOption.AllDirectories).Length > 0)
+            // Only detect Blazor from .razor files if there are also Blazor-specific
+            // component files (not just _ViewImports.razor or _Host.razor used by Razor Pages)
+            var razorFiles = Directory.GetFiles(_repoRoot, "*.razor", SearchOption.AllDirectories);
+            var blazorComponentFiles = razorFiles
+                .Where(f =>
+                {
+                    var name = Path.GetFileName(f);
+                    return !name.StartsWith('_') && !name.Equals("App.razor", StringComparison.OrdinalIgnoreCase);
+                })
+                .ToArray();
+            if (blazorComponentFiles.Length > 3)
                 profile.HasBlazor = true;
-
-            if (Directory.GetFiles(_repoRoot, "*.maui.*", SearchOption.AllDirectories).Length > 0)
-                profile.HasMaui = true;
 
             // Check for Dockerfile or docker-compose (containerization)
             if (File.Exists(Path.Combine(_repoRoot, "Dockerfile")) ||

@@ -49,26 +49,40 @@ public class SkillBrowser
             {
                 AnsiConsole.MarkupLine($"[bold]Detected project types:[/] [cyan]{profile.GetSummary()}[/]\n");
 
-                var choice = AnsiConsole.Prompt(
-                    new SelectionPrompt<string>()
-                        .Title($"[bold]⭐ {recommended.Count} recommended skills for your project[/]")
-                        .HighlightStyle(new Style(Color.Cyan1))
-                        .AddChoices(
-                        [
-                            "View recommended skills",
-                            "Browse all skills",
-                        ]));
-
-                if (choice == "View recommended skills")
+                // Show recommended list directly with "Browse all" as last option
+                var browseAllSentinel = new SkillInfo
                 {
-                    var selected = PromptSkillSelection(recommended, installedNames,
-                        "[bold]⭐ Recommended skills[/] [dim](type to filter, enter to view details)[/]");
-                    if (selected != null)
-                    {
-                        await ShowAndOfferInstall(selected, installedNames, ct);
-                    }
+                    Name = "📋 Browse all skills...",
+                    Description = "",
+                    Source = "",
+                    RepoOwner = "",
+                    RepoName = "",
+                    FolderPath = ""
+                };
+
+                var choices = recommended.Append(browseAllSentinel).ToList();
+                var selected = AnsiConsole.Prompt(
+                    new SelectionPrompt<SkillInfo>()
+                        .Title($"[bold]⭐ Recommended skills[/] [dim](type to filter, enter to select)[/]")
+                        .PageSize(15)
+                        .EnableSearch()
+                        .HighlightStyle(new Style(Color.Cyan1))
+                        .AddChoices(choices)
+                        .UseConverter(s =>
+                        {
+                            if (s == browseAllSentinel)
+                                return "📋 Browse all skills...";
+                            var status = installedNames.Contains(s.Name) ? " ✓" : "";
+                            var plugin = s.PluginName != null ? $" ({s.PluginName})" : "";
+                            return $"{s.Name}{status}{plugin} - {TruncateDescription(s.Description, 60)}";
+                        }));
+
+                if (selected != browseAllSentinel)
+                {
+                    await ShowAndOfferInstall(selected, installedNames, ct);
                     return;
                 }
+                // Fall through to browse all
             }
         }
 

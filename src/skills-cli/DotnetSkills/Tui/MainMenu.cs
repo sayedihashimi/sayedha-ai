@@ -31,8 +31,9 @@ public class MainMenu
         {
             var choice = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
-                    .Title("[bold]What would you like to do?[/]")
+                    .Title("[bold]What would you like to do?[/] [dim](or press 'q' to quit)[/]")
                     .HighlightStyle(new Style(Color.Cyan1))
+                    .EnableSearch()
                     .AddChoices(
                     [
                         "🔍 Browse available skills",
@@ -42,8 +43,11 @@ public class MainMenu
                         "🔄 Update skills",
                         "🗑️  Uninstall a skill",
                         "ℹ️  Skill details",
-                        "🚪 Exit"
+                        "🚪 Exit (q)"
                     ]));
+
+            if (choice.StartsWith("🚪") || choice.Equals("q", StringComparison.OrdinalIgnoreCase))
+                return;
 
             switch (choice)
             {
@@ -75,9 +79,6 @@ public class MainMenu
                 case "ℹ️  Skill details":
                     await InfoFlowAsync(ct);
                     break;
-
-                case "🚪 Exit":
-                    return;
             }
 
             AnsiConsole.WriteLine();
