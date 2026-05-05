@@ -1,5 +1,3 @@
 <Solution>
-  <Folder Name="/src/">
-    <Project Path="src/DotnetSkills/DotnetSkills.csproj" />
-  </Folder>
+  <Project Path="DotnetSkills/DotnetSkills.csproj" />
 </Solution>
