@@ -1,3 +1,8 @@
+---
+name: todo-manager
+description: View and manage a personal TODO list stored durably in a SQLite database. Use this whenever the user wants to track, add, update, prioritize, or review tasks or to-do items — including phrasings like "add a task", "what's on my list", "what should I work on next", "mark that done", "what's overdue", "show my P0s", or any request to capture, organize, or check on work items. Prefer this skill over ad-hoc note-taking whenever the user is managing tasks they expect to persist across sessions.
+---
+
 # TODO Manager
 
 A durable, file-backed task list. Every task lives in a single SQLite database
