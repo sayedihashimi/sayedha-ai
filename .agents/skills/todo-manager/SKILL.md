@@ -32,6 +32,7 @@ Each task has:
 - **tags** — any number of short labels (a task can have several)
 - **links** — any number of URLs, each with an optional label
 - **created_at** / **updated_at** — set automatically
+- **completed_at** — set automatically to the current date when a task moves to `Done`, and cleared if it later leaves `Done` (e.g. reopened). Independent of `updated_at`, so ordinary edits to a finished task don't disturb it.
 
 ## Where the database lives
 
@@ -81,7 +82,8 @@ reformat for the user (see "Displaying tasks").
 add NAME [--description T] [--priority P2] [--status "To do"] [--due YYYY-MM-DD]
         [--effort M] [--tag X ...] [--link URL  | --link "URL::label" ...]
 list   [--status S ...] [--priority P ...] [--tag T ...] [--due-before DATE]
-        [--overdue] [--all] [--sort priority|due|created|updated|status]
+        [--completed-since DATE] [--overdue] [--all]
+        [--sort priority|due|created|updated|completed|status]
 show   ID
 update ID [--name N] [--description T] [--priority P] [--status S]
         [--due YYYY-MM-DD] [--effort E]      # pass --due "" or --effort "" to clear
@@ -105,6 +107,10 @@ Notes that save you trips:
 - `update --due ""` clears a due date; `update --effort ""` clears effort.
 - Status shortcuts (`done`, `start`, etc.) are just convenient wrappers around
   `update --status`.
+- Completion is tracked automatically: `done` stamps `completed_at` with today's
+  date; reopening clears it. For "what did I finish lately," use
+  `list --completed-since YYYY-MM-DD` (it surfaces Done tasks without needing
+  `--all`), optionally with `--sort completed` for most-recent-first.
 
 ## Displaying tasks
 

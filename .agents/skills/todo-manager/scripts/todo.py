@@ -64,7 +64,8 @@ def _init_schema(conn):
             due_date    TEXT,
             effort      TEXT,
             created_at  TEXT NOT NULL,
-            updated_at  TEXT NOT NULL
+            updated_at  TEXT NOT NULL,
+            completed_at TEXT
         );
 
         CREATE TABLE IF NOT EXISTS tags (
@@ -85,11 +86,32 @@ def _init_schema(conn):
         CREATE INDEX IF NOT EXISTS idx_tags_tag       ON tags(tag);
         """
     )
+    _migrate(conn)
     conn.commit()
+
+
+def _migrate(conn):
+    """Bring older databases up to the current schema, non-destructively."""
+    cols = {r["name"] for r in conn.execute("PRAGMA table_info(tasks)")}
+    if "completed_at" not in cols:
+        # Existing DB created before completion tracking existed.
+        conn.execute("ALTER TABLE tasks ADD COLUMN completed_at TEXT")
+    # Backfill: any task already marked Done but missing a completion date
+    # gets stamped with today's date (a one-time fill — it only ever touches
+    # rows where completed_at is still NULL).
+    conn.execute(
+        "UPDATE tasks SET completed_at = ? "
+        "WHERE status = 'Done' AND completed_at IS NULL",
+        (today_date(),),
+    )
 
 
 def now_iso():
     return datetime.now().isoformat(timespec="seconds")
+
+
+def today_date():
+    return date.today().isoformat()
 
 
 # --------------------------------------------------------------------------- #
@@ -210,6 +232,8 @@ def print_task_detail(task):
             print(f"    - [{ln['id']}] {ln['url']}{label}")
     print(f"  created  : {task['created_at']}")
     print(f"  updated  : {task['updated_at']}")
+    if task.get("completed_at"):
+        print(f"  completed: {task['completed_at']}")
 
 
 # --------------------------------------------------------------------------- #
@@ -220,12 +244,13 @@ def cmd_add(conn, args):
     if due == "":
         due = None
     ts = now_iso()
+    completed = today_date() if args.status == "Done" else None
     cur = conn.execute(
         """INSERT INTO tasks (name, description, priority, status, due_date,
-                              effort, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                              effort, created_at, updated_at, completed_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (args.name, args.description, args.priority, args.status, due,
-         args.effort, ts, ts),
+         args.effort, ts, ts, completed),
     )
     task_id = cur.lastrowid
     if args.tag:
@@ -244,7 +269,7 @@ def cmd_add(conn, args):
 
 def _build_list_query(args):
     where, params = [], []
-    if not args.all and not args.status:
+    if not args.all and not args.status and not args.completed_since:
         where.append(f"status IN ({','.join('?' * len(ACTIVE_STATUSES))})")
         params.extend(ACTIVE_STATUSES)
     if args.status:
@@ -262,6 +287,9 @@ def _build_list_query(args):
     if args.due_before:
         where.append("due_date IS NOT NULL AND due_date <> '' AND due_date < ?")
         params.append(args.due_before)
+    if args.completed_since:
+        where.append("completed_at IS NOT NULL AND completed_at >= ?")
+        params.append(args.completed_since)
     clause = ("WHERE " + " AND ".join(where)) if where else ""
     return clause, params
 
@@ -281,10 +309,11 @@ def cmd_list(conn, args):
                           PRIORITY_RANK.get(t["priority"], 99)),
         "created": lambda t: t["created_at"],
         "updated": lambda t: t["updated_at"],
+        "completed": lambda t: t["completed_at"] or "",
         "status": lambda t: (STATUS_RANK.get(t["status"], 99),
                             PRIORITY_RANK.get(t["priority"], 99)),
     }[args.sort]
-    tasks.sort(key=sort_key)
+    tasks.sort(key=sort_key, reverse=(args.sort == "completed"))
 
     if args.json:
         print(json.dumps(tasks, indent=2))
@@ -316,6 +345,9 @@ def cmd_update(conn, args):
         sets.append("priority = ?"); params.append(args.priority)
     if args.status is not None:
         sets.append("status = ?"); params.append(args.status)
+        # Completion timestamp follows the status: set on Done, cleared otherwise.
+        sets.append("completed_at = ?")
+        params.append(today_date() if args.status == "Done" else None)
     if args.due is not None:
         due = parse_due(args.due)
         sets.append("due_date = ?"); params.append(None if due == "" else due)
@@ -339,9 +371,11 @@ def cmd_update(conn, args):
 
 def _set_status(conn, task_id, status, as_json):
     get_task_row(conn, task_id)
+    completed = today_date() if status == "Done" else None
     conn.execute(
-        "UPDATE tasks SET status = ?, updated_at = ? WHERE id = ?",
-        (status, now_iso(), task_id),
+        "UPDATE tasks SET status = ?, completed_at = ?, updated_at = ? "
+        "WHERE id = ?",
+        (status, completed, now_iso(), task_id),
     )
     conn.commit()
     task = task_to_dict(conn, get_task_row(conn, task_id))
@@ -488,12 +522,16 @@ def build_parser():
     ls.add_argument("--priority", "-p", action="append", choices=PRIORITIES)
     ls.add_argument("--tag", "-t", action="append")
     ls.add_argument("--due-before", help="show tasks due before YYYY-MM-DD")
+    ls.add_argument("--completed-since",
+                    help="show tasks completed on/after YYYY-MM-DD "
+                         "(includes Done tasks automatically)")
     ls.add_argument("--overdue", action="store_true",
                     help="only overdue active tasks")
     ls.add_argument("--all", action="store_true",
                     help="include Done and Cancelled")
     ls.add_argument("--sort",
-                    choices=["priority", "due", "created", "updated", "status"],
+                    choices=["priority", "due", "created", "updated",
+                             "completed", "status"],
                     default="priority")
     ls.add_argument("--json", action="store_true")
     ls.set_defaults(func=cmd_list)
