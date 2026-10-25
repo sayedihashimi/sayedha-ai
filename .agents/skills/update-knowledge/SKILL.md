@@ -38,7 +38,8 @@ project/
     └── <feature-name>/
         ├── research.md
         ├── decisions.md
-        └── open-questions.md
+        ├── open-questions.md
+        └── status.md
 ```
 
 Feature directories and knowledge files may be created as needed.
@@ -140,6 +141,8 @@ Review the current conversation for meaningful information worth preserving.
 
 Preserve useful hypotheses and unverified findings only when clearly labeled.
 
+Record feature-level progress, status changes, completed work, and next steps in the feature's `status.md`.
+
 ## Knowledge Update Rules
 
 Before modifying a knowledge file:
@@ -185,6 +188,8 @@ Contains a concise overview of:
 - Current priorities
 - Major blockers
 - Significant recent changes
+
+List active features in a line each, linking to each feature's `status.md`, instead of repeating their detail.
 
 Avoid duplicating detailed feature status.
 
@@ -250,6 +255,21 @@ Include:
 
 Remove resolved questions from the active list and preserve important resolutions elsewhere.
 
+### Feature `status.md`
+
+Contains the current status of the feature.
+
+Include:
+
+- Current phase (e.g. idea, exploring, prototyping, shipped, parked)
+- Priority or position relative to other features, when one was set
+- Work completed, with dates
+- Next steps
+- Blockers
+- Links to the feature's research, decisions, and open questions
+
+Create it only when there is real status to record.
+
 ## File Creation
 
 Create knowledge files only when meaningful information needs to be preserved.
@@ -292,7 +312,7 @@ Prioritize:
 2. Research findings that required significant effort.
 3. Important changes to project or feature direction.
 4. Unresolved questions that affect future work.
-5. Progress that future sessions need to understand.
+5. Progress that future sessions need to understand. Feature-level progress goes in the feature's `status.md`.
 
 Avoid recording every conversational detail.
 
