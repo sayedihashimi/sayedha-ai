@@ -67,9 +67,11 @@ For a feature, also read these files from the feature directory:
 - `research.md`
 - `decisions.md`
 - `open-questions.md`
-- `project-status.md`
+- `status.md`
 
-For a workstream, list the deliverables in the workstream directory and read the ones relevant to the user's request. If the workstream directory contains knowledge files (`research.md`, `decisions.md`, `open-questions.md`, `project-status.md`, `context.md`), they were saved there by mistake. Read them, and report them as misplaced in the completion summary.
+If the feature directory has a `project-status.md` instead of `status.md`, read it as the feature's status file and report it in the completion summary as a legacy name.
+
+For a workstream, list the deliverables in the workstream directory and read the ones relevant to the user's request. If the workstream directory contains knowledge files (`research.md`, `decisions.md`, `open-questions.md`, `status.md`, `project-status.md`, `context.md`), they were saved there by mistake. Read them, and report them as misplaced in the completion summary.
 
 Only read files that exist.
 
@@ -89,7 +91,7 @@ Save knowledge here:
 Rules:
 
 - Never write knowledge files into a workstream directory. Workstream directories hold authored deliverables only.
-- Use the standard filenames: `research.md`, `decisions.md`, `open-questions.md`, `project-status.md`. Don't invent others, such as `context.md`.
+- Use the standard filenames. In `memory/`: `research.md`, `decisions.md`, `open-questions.md`, `project-status.md`. In a feature directory: `research.md`, `decisions.md`, `open-questions.md`, `status.md`. Don't invent others, such as `context.md`.
 - If `memory/` doesn't exist, create it when the first knowledge file is written. Don't create it empty.
 - Avoid duplicating knowledge across levels.
 - Preserve decisions and supporting evidence.

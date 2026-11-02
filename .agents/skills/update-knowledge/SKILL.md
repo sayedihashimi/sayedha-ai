@@ -270,6 +270,10 @@ Include:
 
 Create it only when there is real status to record.
 
+The feature status file is always named `status.md`. `project-status.md` is the root-level file in `memory/` only. If a feature directory has a `project-status.md`, treat it as the feature's `status.md`: update it in place and offer to rename it. Don't create a second status file next to it.
+
+If a feature has no status file yet, and its status has so far been kept in its `README.md` or in `memory/project-status.md`, create `status.md` when there is new status to record. Leave the existing status text in the README and in root memory where it is. Offer to cut the feature's detail in `memory/project-status.md` down to one line that links to the new `status.md`.
+
 ## File Creation
 
 Create knowledge files only when meaningful information needs to be preserved.
