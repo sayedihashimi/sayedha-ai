@@ -59,12 +59,14 @@ Load knowledge in two tiers, and make all the reads in a single message of paral
 
 - `CLAUDE.md`
 - `memory/project-status.md`
-- For a feature: the feature's `status.md`, `open-questions.md` and `README.md`
+- For a feature: the feature's `status.md` and `README.md`
 
 **Read only the frontmatter, the `## Summary` block and the headings:**
 
 - `memory/decisions.md`, `memory/research.md`, `memory/open-questions.md`
-- For a feature: the feature's `decisions.md` and `research.md`
+- For a feature: the feature's `decisions.md`, `research.md` and `open-questions.md`
+
+Before answering anything that depends on an open question, read that question's section in full.
 
 To do this, read the first 30 lines of each file and grep it for headings (`^#`) in the same batch. If a file has no `## Summary` block yet, read the whole file instead and note it for the housekeeping line.
 
