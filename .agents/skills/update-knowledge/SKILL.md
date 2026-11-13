@@ -17,6 +17,15 @@ Maintain structured, persistent knowledge across project-level and feature-level
 - Make knowledge reusable by other AI agents.
 - Keep automatically maintained knowledge separate from authored deliverables.
 
+## Efficiency
+
+This skill usually runs at the end of a long session, so every tool round-trip re-reads the whole conversation. Keep round-trips to three or fewer.
+
+1. **Gap check first.** Knowledge is normally saved during the session as work happens. Before reading anything, list the knowledge writes already made in this session. Then look only for decisions, findings, status changes and open questions that aren't saved yet. If there are none, say so in one line and stop. Don't read any files.
+2. **One batch of reads.** Read every file you might change in a single message of parallel tool calls. Don't re-read a file that this session has already read or written and that hasn't changed since.
+3. **One batch of edits.** Make all the edits in a single message of parallel tool calls.
+4. **Edit and Write tools only.** Never change knowledge files with Python, sed, PowerShell or other shell commands. Edit-tool diffs are what the user reviews.
+
 ## Project Structure
 
 The project generally follows this structure:
@@ -34,19 +43,25 @@ project/
 │   ├── research.md
 │   └── open-questions.md
 ├── strategy/          # authored deliverables only, no knowledge files
-└── features/
-    └── <feature-name>/
-        ├── research.md
-        ├── decisions.md
-        ├── open-questions.md
-        └── status.md
+├── features/
+│   └── <feature-name>/
+│       ├── research.md
+│       ├── decisions.md
+│       ├── open-questions.md
+│       └── status.md
+└── archive/           # older knowledge, not loaded by default
+    ├── memory/
+    │   └── <file>.md
+    └── features/
+        └── <feature-name>/
+            └── <file>.md
 ```
 
 Feature directories and knowledge files may be created as needed.
 
 Do not create empty files or directories unnecessarily.
 
-Knowledge files live only in `memory/` and `features/<feature-name>/`. Never write knowledge files into `strategy/` or any other workstream directory. Those hold authored deliverables. If you find knowledge files in a workstream directory, don't add to them. Report them and offer to merge them into `memory/`.
+Knowledge files live only in `memory/`, `features/<feature-name>/` and the project's `archive/`. Never write knowledge files into `strategy/` or any other workstream directory. Those hold authored deliverables. If you find knowledge files in a workstream directory, don't add to them. Report them and offer to merge them into `memory/`.
 
 ## Knowledge Classification
 
@@ -101,6 +116,8 @@ If `/work-on-feature` established an active feature, use that feature's director
 Only directories under `features/` are features. If the active context is a workstream outside `features/`, such as `strategy/`, store its knowledge in the root `memory/` directory.
 
 Do not infer a different active feature merely because another feature is mentioned in passing.
+
+While a list of ideas is being brainstormed, keep all of its knowledge in `memory/`. Create a feature directory for an idea only once the user picks it to work on.
 
 The active feature is a logical context, not a filesystem restriction.
 
@@ -263,7 +280,7 @@ Include:
 
 - Current phase (e.g. idea, exploring, prototyping, shipped, parked)
 - Priority or position relative to other features, when one was set
-- Work completed, with dates
+- Work completed, with dates (the 10 most recent entries; older ones go to the archive)
 - Next steps
 - Blockers
 - Links to the feature's research, decisions, and open questions
@@ -273,6 +290,36 @@ Create it only when there is real status to record.
 The feature status file is always named `status.md`. `project-status.md` is the root-level file in `memory/` only. If a feature directory has a `project-status.md`, treat it as the feature's `status.md`: update it in place and offer to rename it. Don't create a second status file next to it.
 
 If a feature has no status file yet, and its status has so far been kept in its `README.md` or in `memory/project-status.md`, create `status.md` when there is new status to record. Leave the existing status text in the README and in root memory where it is. Offer to cut the feature's detail in `memory/project-status.md` down to one line that links to the new `status.md`.
+
+## File Format
+
+Every knowledge file follows this layout:
+
+1. Frontmatter with an `updated: YYYY-MM-DD` field. Change it whenever you edit the file.
+2. The H1 title.
+3. A `## Summary` block of 15 lines or fewer, giving the current state only: the active decisions, key findings, open questions or status. Keep each item's fact, hypothesis or decision label. Update the summary in the same edit as any change below it.
+4. The detail and history.
+
+Status files (`status.md` and `memory/project-status.md`) also have a `## Where we left off` block right after the summary, with:
+
+- the date of the last session
+- what was in progress
+- the next step
+
+Rewrite this block on every update. It's the first thing a new session reads.
+
+Give decisions and open questions stable IDs: `D1`, `D2` in `memory/`, and a short feature prefix in a feature directory (for example `FD1`). Use `Q1`, `Q2` for open questions. Never renumber or reuse an ID. Keep existing ID schemes as they are.
+
+## Size Limits and Archiving
+
+Keep active knowledge files small, because `/work-on-feature` loads them at the start of every session. The archive is the project's `archive/` directory. It mirrors the knowledge layout (`archive/memory/<file>.md`, `archive/features/<feature>/<file>.md`) and is not loaded by default.
+
+- **Status work log:** keep the 10 most recent "Work completed" entries. Move older entries to the matching archive file, newest first.
+- **Decisions:** move superseded or reversed decisions to the archive. In the active file, leave a one-line stub with the ID, title, status and a link to the archived entry.
+- **Research:** when a `research.md` passes about 15 KB, move settled sections that no current work depends on to the archive. Leave a one-line pointer in the active file.
+- **Open questions:** move resolved questions out of the active list, as already described above.
+
+Moving content to the archive is a move, not a deletion. Keep the text unchanged and keep links working.
 
 ## File Creation
 
@@ -304,11 +351,13 @@ These documents may be read for context.
 
 Only modify them when the user explicitly requests changes.
 
+The exception is a draft Claude wrote. Mark every deliverable you create with `author: claude` in its frontmatter. A deliverable with `author: claude` may be updated when the session's work changes what it says, and you report the change in your summary. Deliverables without that marker are the user's and stay protected.
+
 Automatically maintained knowledge files must remain separate from authored deliverables.
 
 ## Session Knowledge Maintenance
 
-When invoked, review the current conversation and identify knowledge that should persist beyond the session.
+When invoked, review the current conversation and identify knowledge that should persist beyond the session. Start with the gap check in [Efficiency](#efficiency).
 
 Prioritize:
 
@@ -358,6 +407,7 @@ When performing routine knowledge maintenance as part of normal work:
 
 ## Safety
 
+- Never store project knowledge in Claude Code's built-in memory folder (`~/.claude/projects/*/memory/`). That folder is only for notes on how the user wants Claude to work. Project facts, decisions and status belong in the project's knowledge files.
 - Never store secrets, credentials, access tokens, or private keys.
 - Avoid copying sensitive personal information into knowledge files.
 - Preserve the distinction between internal and public information.

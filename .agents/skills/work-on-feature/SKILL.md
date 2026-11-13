@@ -53,23 +53,24 @@ The active feature is a logical context, not a filesystem restriction.
 
 ### 4. Load existing knowledge
 
-Always consult project-level knowledge when available:
+Load knowledge in two tiers, and make all the reads in a single message of parallel tool calls.
+
+**Read in full:**
 
 - `CLAUDE.md`
 - `memory/project-status.md`
-- `memory/decisions.md`
-- `memory/research.md`
-- `memory/open-questions.md`
+- For a feature: the feature's `status.md`, `open-questions.md` and `README.md`
 
-For a feature, also read these files from the feature directory:
+**Read only the frontmatter, the `## Summary` block and the headings:**
 
-- `README.md`
-- `research.md`
-- `decisions.md`
-- `open-questions.md`
-- `status.md`
+- `memory/decisions.md`, `memory/research.md`, `memory/open-questions.md`
+- For a feature: the feature's `decisions.md` and `research.md`
 
-If the feature directory has a `project-status.md` instead of `status.md`, read it as the feature's status file and report it in the completion summary as a legacy name.
+To do this, read the first 30 lines of each file and grep it for headings (`^#`) in the same batch. If a file has no `## Summary` block yet, read the whole file instead and note it for the housekeeping line.
+
+Pull other sections, and anything in `archive/`, only when a task needs them.
+
+If the feature directory has a `project-status.md` instead of `status.md`, read it as the feature's status file and report it as a legacy name.
 
 For a workstream, list the deliverables in the workstream directory and read the ones relevant to the user's request. If the workstream directory contains knowledge files (`research.md`, `decisions.md`, `open-questions.md`, `status.md`, `project-status.md`, `context.md`), they were saved there by mistake. Read them, and report them as misplaced in the completion summary.
 
@@ -91,11 +92,13 @@ Save knowledge here:
 Rules:
 
 - Never write knowledge files into a workstream directory. Workstream directories hold authored deliverables only.
-- Use the standard filenames. In `memory/`: `research.md`, `decisions.md`, `open-questions.md`, `project-status.md`. In a feature directory: `research.md`, `decisions.md`, `open-questions.md`, `status.md`. Don't invent others, such as `context.md`.
+- Use the standard filenames. In `memory/`: `research.md`, `decisions.md`, `open-questions.md`, `project-status.md`. In a feature directory: `research.md`, `decisions.md`, `open-questions.md`, `status.md`. Don't invent others, such as `context.md`. Older knowledge goes to the project's `archive/`, as described in the `update-knowledge` skill.
+- Save knowledge as you go, when a decision is made or a finding is confirmed. Use the Edit and Write tools only, never shell or Python edits.
+- Never save project knowledge in Claude Code's built-in memory folder (`~/.claude/projects/*/memory/`).
 - If `memory/` doesn't exist, create it when the first knowledge file is written. Don't create it empty.
 - Avoid duplicating knowledge across levels.
 - Preserve decisions and supporting evidence.
-- Do not modify authored strategy documents unless explicitly requested.
+- Do not modify authored strategy documents unless explicitly requested. Drafts marked `author: claude` are the exception; see the `update-knowledge` skill.
 - If the destination is unclear, ask before writing.
 
 Do not automatically invoke unrelated skills.
@@ -111,14 +114,13 @@ For subsequent tasks:
 
 ### 7. Completion
 
-Confirm:
+Reply in 10 lines or fewer:
 
-- Project name
-- Active feature
-- Feature directory, and whether it is a feature or a workstream
-- Knowledge directory, where new knowledge will be saved
-- Existing knowledge files discovered
-- Misplaced knowledge files, if any
+1. **Where we left off:** from the status file's `## Where we left off` block, or its latest entry and next steps if there's no block yet.
+2. **Context:** project name, active feature, its directory and whether it's a feature or a workstream, and where new knowledge will be saved.
+3. **Housekeeping**, only if there's something to report, in one line: misplaced knowledge files, legacy names, files without a `## Summary` block, and knowledge files over about 15 KB. Offer to tidy them up.
+
+Don't list every file you read.
 
 Then wait for the user's next task.
 
