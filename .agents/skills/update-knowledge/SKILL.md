@@ -21,8 +21,8 @@ Maintain structured, persistent knowledge across project-level and feature-level
 
 This skill usually runs at the end of a long session, so every tool round-trip re-reads the whole conversation. Keep round-trips to three or fewer.
 
-1. **Gap check first.** Knowledge is normally saved during the session as work happens. Before reading anything, list the knowledge writes already made in this session. Then look only for decisions, findings, status changes and open questions that aren't saved yet. If there are none, say so in one line and stop. Don't read any files.
-2. **One batch of reads.** Read every file you might change in a single message of parallel tool calls. Don't re-read a file that this session has already read or written and that hasn't changed since.
+1. **Gap check first.** Knowledge is normally saved during the session as work happens. Before reading anything, list the knowledge writes already made in this session. Then look only for decisions, findings, status changes and open questions that aren't saved yet. If there are none, run only the frontmatter check (see [Adding missing frontmatter](#adding-missing-frontmatter)), fix what it finds, say so in one line and stop.
+2. **One batch of reads.** Run the frontmatter check in this same batch. Read every file you might change, plus the files the check finds, in a single message of parallel tool calls. Don't re-read a file that this session has already read or written and that hasn't changed since.
 3. **One batch of edits.** Make all the edits in a single message of parallel tool calls.
 4. **Edit and Write tools only.** Never change knowledge files with Python, sed, PowerShell or other shell commands. Edit-tool diffs are what the user reviews.
 
@@ -295,7 +295,7 @@ If a feature has no status file yet, and its status has so far been kept in its 
 
 Every knowledge file follows this layout:
 
-1. Frontmatter with an `updated: YYYY-MM-DD` field. Change it whenever you edit the file.
+1. Frontmatter, described below.
 2. The H1 title.
 3. A `## Summary` block of 15 lines or fewer, giving the current state only: the active decisions, key findings, open questions or status. Keep each item's fact, hypothesis or decision label. Update the summary in the same edit as any change below it.
 4. The detail and history.
@@ -309,6 +309,48 @@ Status files (`status.md` and `memory/project-status.md`) also have a `## Where 
 Rewrite this block on every update. It's the first thing a new session reads.
 
 Give decisions and open questions stable IDs: `D1`, `D2` in `memory/`, and a short feature prefix in a feature directory (for example `FD1`). Use `Q1`, `Q2` for open questions. Never renumber or reuse an ID. Keep existing ID schemes as they are.
+
+### Frontmatter
+
+Every knowledge file (`decisions.md`, `research.md`, `open-questions.md`, `status.md` and `memory/project-status.md`) starts with:
+
+```yaml
+---
+type: knowledge
+created: YYYY-MM-DD
+updated: YYYY-MM-DD
+---
+```
+
+Change `updated` whenever you edit the file.
+
+Status files (`status.md` and `memory/project-status.md`) also have these fields, so that scripts and other skills can read the key facts without parsing the text:
+
+```yaml
+state: active               # active | paused | done
+last_session: YYYY-MM-DD    # date of the last session that worked on it
+next: One line, the next step
+tickets: [ORDER-146]        # tracker IDs this file follows, or []
+```
+
+- `last_session` and `next` repeat what the `## Where we left off` block says. Write them in the same edit as that block, so they never disagree.
+- Set `state` to `paused` or `done` only when the user or the status text says so. Otherwise it's `active`.
+- List in `tickets` only the IDs the file tracks as work items (YouTrack, Jira, GitHub), not every ID it mentions in passing.
+- Keep any other fields that are already there.
+
+### Adding missing frontmatter
+
+Some older files have no frontmatter, or are missing some of the fields above. Whenever this skill or `/work-on-feature` runs, add what's missing:
+
+1. **Find the files.** In one command, list the knowledge files outside `archive/` whose first line isn't `---`, with each file's last-modified date. For example: `find memory features -name '*.md' \( -name decisions.md -o -name research.md -o -name open-questions.md -o -name status.md -o -name project-status.md \) -not -path '*/archive/*' -exec sh -c 'head -1 "$1" | grep -qx -- --- || echo "$(date -r "$1" +%F) $1"' _ {} \;`. For status files that already have frontmatter, also list the ones missing `state:`, `last_session:` or `next:` (`grep -L`). This is a read-only check, so a shell command is fine here.
+2. **Fill in the values:**
+   - `created`: the earliest date in the file, or its last-modified date if it has no dates.
+   - `updated`: the file's last-modified date. Adding frontmatter doesn't change what the file says, so don't set it to today.
+   - Status fields: take `last_session` and `next` from the `## Where we left off` block, or from the latest dated entry and the next steps if there's no block. Take `tickets` from the IDs the file tracks. Use `[]` if there are none.
+   - If a value can't be worked out, leave that field out rather than guess, and mention it in the completion summary.
+3. **Insert it** with the Edit tool, above the H1 title. Change nothing else in the file.
+
+Report the fixed files in one line of the completion summary, for example "Added frontmatter to 3 files".
 
 ## Size Limits and Archiving
 
