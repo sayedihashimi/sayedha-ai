@@ -80,6 +80,10 @@ Only read files that exist.
 
 Do not read unrelated feature directories unless necessary.
 
+### 4a. Add missing frontmatter
+
+In the same batch of reads, run the frontmatter check from the `update-knowledge` skill (its "Adding missing frontmatter" section), limited to `memory/` and the active feature's directory. Then add any missing frontmatter and status fields as that section describes, using the Edit tool. This is the one change to files that this skill makes before the user asks for anything.
+
 ### 5. Knowledge management
 
 Before writing any knowledge file, read the `update-knowledge` skill at `../update-knowledge/SKILL.md`, relative to this skill's base directory, and follow its classification and maintenance rules. That skill can't be invoked automatically, so read the file directly.
@@ -120,7 +124,7 @@ Reply in 10 lines or fewer:
 
 1. **Where we left off:** from the status file's `## Where we left off` block, or its latest entry and next steps if there's no block yet.
 2. **Context:** project name, active feature, its directory and whether it's a feature or a workstream, and where new knowledge will be saved.
-3. **Housekeeping**, only if there's something to report, in one line: misplaced knowledge files, legacy names, files without a `## Summary` block, and knowledge files over about 15 KB. Offer to tidy them up.
+3. **Housekeeping**, only if there's something to report, in one line: frontmatter added, misplaced knowledge files, legacy names, files without a `## Summary` block, and knowledge files over about 15 KB. Offer to tidy them up.
 
 Don't list every file you read.
 
